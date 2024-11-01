@@ -48,12 +48,24 @@ EOF
 
 # Exécution du programme Python sur le Raspberry Pi dans l'environnement virtuel
 echo "Exécution du programme Python sur le Raspberry Pi..."
-ssh "$PI_USER@$PI_HOST" "cd $PI_PATH && source venv/bin/activate && nohup python3 spot.py > output.log 2>&1 &"
+ssh "$PI_USER@$PI_HOST" "cd $PI_PATH && source venv/bin/activate && nohup python3 spot.py > output.log 2>&1 &" || true
 
 # Vérification que le nouveau processus est lancé
-sleep 2
-if ssh "$PI_USER@$PI_HOST" "pgrep -f 'python3 .*spot\.py' > /dev/null"; then
+sleep 10
+process_count=$(ssh "$PI_USER@$PI_HOST" "pgrep -f 'python3 .*spot\.py' | wc -l")
+if [ "$process_count" -eq 1 ]; then
     echo "Nouveau processus lancé avec succès."
+elif [ "$process_count" -gt 1 ]; then
+    echo "Plusieurs processus détectés, un seul processus devrait être lancé. Relance en cours..."
+    ssh "$PI_USER@$PI_HOST" "pkill -f 'python3 .*spot\.py' && cd $PI_PATH && source venv/bin/activate && nohup python3 spot.py > output.log 2>&1 &"
+    sleep 10
+    process_count=$(ssh "$PI_USER@$PI_HOST" "pgrep -f 'python3 .*spot\.py' | wc -l")
+    if [ "$process_count" -eq 1 ]; then
+        echo "Nouveau processus relancé avec succès."
+    else
+        echo "Échec du relancement du processus unique."
+        exit 1
+    fi
 else
     echo "Échec du lancement du nouveau processus."
     exit 1
