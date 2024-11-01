@@ -5,8 +5,7 @@
 source .env
 
 # Synchronisation des fichiers
-echo "Synchronisation des fichiers..."
-rsync -avz --exclude='.git' --exclude='venv' $LOCAL_PATH $PI_USER@$PI_HOST:$PI_PATH
+entr ./transfer.sh
 
 # Arrêt du programme Python en cours sur le Raspberry Pi
 if ssh $PI_USER@$PI_HOST "pgrep -f 'python3 .*spot\.py' > /dev/null"; then
