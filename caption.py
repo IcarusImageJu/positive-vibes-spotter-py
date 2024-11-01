@@ -1,4 +1,3 @@
-import logging
 import os
 from dotenv import load_dotenv
 # Charger les variables d'environnement depuis le fichier .env
@@ -58,7 +57,7 @@ def get_caption(image_base64):
     ]
     
     def request_caption():
-        logging.debug("Envoi de la requête à l'API OpenAI pour obtenir la légende.")
+        print("Envoi de la requête à l'API OpenAI pour obtenir la légende.")
         response = client.chat.completions.create(
             model=MODEL,
             messages=messages,
@@ -69,6 +68,8 @@ def get_caption(image_base64):
             presence_penalty=0,
             response_format={"type": "text"}
         )
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        print(f"Légende générée: {content}")
+        return content
     
     return retry(request_caption)
