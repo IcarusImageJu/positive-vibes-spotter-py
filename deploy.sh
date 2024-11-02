@@ -37,9 +37,14 @@ else
     ssh $PI_USER@$PI_HOST "cd $PI_PATH && source venv/bin/activate && pip install -r requirements.txt"
 fi
 
+# Arrêt de tous les processus Python préexistants (pour éviter les duplications)
+echo "Arrêt de tous les processus Python avant de relancer le programme..."
+ssh "$PI_USER@$PI_HOST" "pkill -f 'python3 .*spot\.py'" || true
+sleep 2
+
 # Exécution du programme Python sur le Raspberry Pi dans l'environnement virtuel
 echo "Exécution du programme Python sur le Raspberry Pi..."
-ssh "$PI_USER@$PI_HOST" "cd $PI_PATH && source venv/bin/activate && python3 spot.py &" || true
+ssh "$PI_USER@$PI_HOST" "cd $PI_PATH && source venv/bin/activate && nohup python3 spot.py > spot.log 2>&1 &" || true
 
 # Vérification que le nouveau processus est lancé
 sleep 10
@@ -48,7 +53,7 @@ if [ "$process_count" -eq 1 ]; then
     echo "Nouveau processus lancé avec succès."
 elif [ "$process_count" -gt 1 ]; then
     echo "Plusieurs processus détectés, un seul processus devrait être lancé. Relance en cours..."
-    ssh "$PI_USER@$PI_HOST" "pkill -f 'python3 .*spot\.py' && cd $PI_PATH && source venv/bin/activate && python3 spot.py &" || true
+    ssh "$PI_USER@$PI_HOST" "pkill -f 'python3 .*spot\.py' && cd $PI_PATH && source venv/bin/activate && nohup python3 spot.py > spot.log 2>&1 &" || true
     sleep 10
     process_count=$(ssh "$PI_USER@$PI_HOST" "pgrep -f 'python3 .*spot\.py' | wc -l")
     if [ "$process_count" -eq 1 ]; then

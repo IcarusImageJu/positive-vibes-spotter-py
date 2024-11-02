@@ -7,7 +7,7 @@ SCREEN_SIZE = (800, 480)
 # Fonction pour créer une légende et des masques en damier dynamiquement pour prévenir le burn-in des pixels
 def draw_caption_with_checkerboard(screen, caption, font, clock, duration):
     # Initialiser les couleurs
-    text_color = (150, 150, 150)
+    text_color = (175, 175, 175)
     background_color = (0, 0, 0)
     checker_color = (0, 0, 0)
     checker_size = 2  # Augmenter la taille du damier pour une meilleure visibilité
@@ -43,7 +43,7 @@ def draw_caption_with_checkerboard(screen, caption, font, clock, duration):
         for line in lines:
             text_surface = font.render(line, True, text_color)
             screen.blit(text_surface, (25, y_offset))
-            y_offset += 40  # Espacement entre les lignes
+            y_offset += 56  # Espacement entre les lignes
 
         # Appliquer le motif en damier animé par-dessus le texte
         for x in range(0, SCREEN_SIZE[0], checker_size):
@@ -71,10 +71,10 @@ def render(caption, duration=3600):
 
     # Charger la police
     try:
-        font = pygame.font.Font(pygame.font.match_font('arial'), 36)
+        font = pygame.font.Font(pygame.font.match_font('arial'), 48)
     except IOError:
         print("Police Arial non trouvée, utilisation de la police par défaut.")
-        font = pygame.font.Font(pygame.font.get_default_font(), 36)
+        font = pygame.font.Font(pygame.font.get_default_font(), 48)
 
     # Afficher la légende avec le motif en damier
     draw_caption_with_checkerboard(screen, caption, font, clock, duration)
