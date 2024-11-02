@@ -29,26 +29,17 @@ ssh "$PI_USER@$PI_HOST" << EOF
 EOF
 
 # Création d'un environnement virtuel et installation des bibliothèques Python
-ssh "$PI_USER@$PI_HOST" << EOF
-  if [ ! -d "$PI_PATH/venv" ]; then
+if ssh $PI_USER@$PI_HOST "[ ! -d $PI_PATH/venv ]"; then
     echo "Création de l'environnement virtuel et installation des bibliothèques..."
-    cd "$PI_PATH"
-    python3 -m venv venv --system-site-packages
-    source venv/bin/activate
-    pip install --upgrade pip
-    pip install -r requirements.txt
-  else
+    ssh $PI_USER@$PI_HOST "cd $PI_PATH && python3 -m venv venv --system-site-packages && source venv/bin/activate && pip install -r requirements.txt"
+else
     echo "L'environnement virtuel existe déjà. Mise à jour des bibliothèques..."
-    cd "$PI_PATH"
-    source venv/bin/activate
-    pip install --upgrade pip
-    pip install -r requirements.txt
-  fi
-EOF
+    ssh $PI_USER@$PI_HOST "cd $PI_PATH && source venv/bin/activate && pip install -r requirements.txt"
+fi
 
 # Exécution du programme Python sur le Raspberry Pi dans l'environnement virtuel
 echo "Exécution du programme Python sur le Raspberry Pi..."
-ssh "$PI_USER@$PI_HOST" "cd $PI_PATH && source venv/bin/activate && nohup python3 spot.py > output.log 2>&1 &" || true
+ssh "$PI_USER@$PI_HOST" "cd $PI_PATH && source venv/bin/activate && python3 spot.py &" || true
 
 # Vérification que le nouveau processus est lancé
 sleep 10
@@ -57,7 +48,7 @@ if [ "$process_count" -eq 1 ]; then
     echo "Nouveau processus lancé avec succès."
 elif [ "$process_count" -gt 1 ]; then
     echo "Plusieurs processus détectés, un seul processus devrait être lancé. Relance en cours..."
-    ssh "$PI_USER@$PI_HOST" "pkill -f 'python3 .*spot\.py' && cd $PI_PATH && source venv/bin/activate && nohup python3 spot.py > output.log 2>&1 &"
+    ssh "$PI_USER@$PI_HOST" "pkill -f 'python3 .*spot\.py' && cd $PI_PATH && source venv/bin/activate && python3 spot.py &" || true
     sleep 10
     process_count=$(ssh "$PI_USER@$PI_HOST" "pgrep -f 'python3 .*spot\.py' | wc -l")
     if [ "$process_count" -eq 1 ]; then

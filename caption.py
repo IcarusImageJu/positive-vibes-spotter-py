@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv()
 
+import re
+
 from utils import retry
 
 API_KEY = os.getenv('OPENAI_API_KEY', 'your_openai_api_key_here')
@@ -69,6 +71,7 @@ def get_caption(image_base64):
             response_format={"type": "text"}
         )
         content = response.choices[0].message.content
+        content = re.sub(r'^"|"$', '', content)  # Retire les guillemets au début et à la fin
         print(f"Légende générée: {content}")
         return content
     
